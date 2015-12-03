@@ -19,7 +19,7 @@
 #include <sys/types.h>
 
 /* Receive nvdata on UPD port 5554 */
-#define NVA_DATA_PORT   (5554)
+#define NAV_DATA_PORT   (5554)
 
 /* Reveive video stream on TCP port 5555 */
 #define VIDEO_PORT      (5555)
