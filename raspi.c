@@ -9,9 +9,7 @@ int main(int argc, char *argv[])
     printf("Ardrone data gathering program, %s, %s\n", __DATE__, __TIME__);
     ardrone_init();
     navdata_init();
-    /*
-     * add nvdata and video code here
-     */
+    //video_init();
     wait_thread_loop();
     return 0;
 }
