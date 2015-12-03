@@ -12,7 +12,7 @@ raspi.o: raspi.c common/ardrone.h
 ardrone.o: common/ardrone.c common/ardrone.h
 	$(CC) $(CCFLAGS) -c common/ardrone.c
 
-navdata.o: navdata/navdata.c navdata/navdata.h navdata/navdata_common.h navdata/navdata_keys.h
+navdata.o: navdata/navdata.c navdata/navdata.h
 	$(CC) $(CCFLAGS) -c navdata/navdata.c
  
 clean: 

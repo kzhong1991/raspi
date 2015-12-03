@@ -36,6 +36,8 @@
 #define ARDRONE_PROFILE_ID      "00000000"
 #define ARDRONE_APPLICATION_ID  "96eb3af0"
 
+#define ARDRONE_IP              "192.168.1.1"
+
 void ardrone_init();
 void send_AT_cmd(const char *cmd);
 void ardrone_config(const char *name, const char *value);
@@ -43,6 +45,7 @@ void send_PCMD_MAG(int enable, float roll, float pitch, float gaz, float yaw, fl
 int get_seq_num();
 void wait_thread_loop();
 void cmd_thread_exit();
+char *get_ardrone_ip();
 
 #endif
 
