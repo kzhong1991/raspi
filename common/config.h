@@ -1,7 +1,7 @@
 /*********************************************************************
  * @file    config.h
  * @author  kzhong1991<kzhong1991@gmail.com>
- * @date    2015-12-03
+ * @date    2015-11-03
  * @brief   Definition of all the configuration value for the ardrone
  **********************************************************************/
 #ifndef CONFIG_H

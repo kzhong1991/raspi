@@ -2,10 +2,10 @@
 
 int seq_num = 0;
 int cmd_socket;
-struct sockaddr_in dst_addr, src_addr;
+struct sockaddr_in cmd_dst_addr, cmd_src_addr;
 pthread_mutex_t mutex;
 pthread_t cmd_pid = NULL;
-int stop = 0;
+int cmd_stop = 0;
 
 static int cmd_socket_init()
 {
@@ -14,37 +14,40 @@ static int cmd_socket_init()
 
     ardrone_ip = get_ardrone_ip();
 
-    bzero(&src_addr, sizeof(src_addr));
-    src_addr.sin_family = AF_INET;
-    src_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    src_addr.sin_port = htons(AT_CMD_PORT);
+    bzero(&cmd_src_addr, sizeof(cmd_src_addr));
+    cmd_src_addr.sin_family = AF_INET;
+    cmd_src_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    cmd_src_addr.sin_port = htons(AT_CMD_PORT);
 
-    bzero(&dst_addr, sizeof(dst_addr));
-    dst_addr.sin_family = AF_INET;
-    dst_addr.sin_addr.s_addr = inet_addr(ardrone_ip);
-    dst_addr.sin_port = htons(AT_CMD_PORT);
+    bzero(&cmd_dst_addr, sizeof(cmd_dst_addr));
+    cmd_dst_addr.sin_family = AF_INET;
+    cmd_dst_addr.sin_addr.s_addr = inet_addr(ardrone_ip);
+    cmd_dst_addr.sin_port = htons(AT_CMD_PORT);
     
     cmd_socket = socket(AF_INET, SOCK_DGRAM, 0);
-    res = bind(cmd_socket, (struct sockaddr*)&src_addr, sizeof(src_addr));
-
+    res = bind(cmd_socket, (struct sockaddr*)&cmd_src_addr, sizeof(cmd_src_addr));
+    if (res != 0)
+        printf(">>>>>>binding cmd socket to AT_CMD_PORT FAILED!\n");
+    else
+        printf(">>>>>>binding cmd socket to AT_CMD_PORT OK!\n");
+       
     return res;
 
 }
 
-static void *worker(void *arg)
+static void *cmd_worker(void *arg)
 {
     char cmd[1024], tmp[64];
     
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
-    sprintf(cmd, "AT*PCMD_MAG=%d,0,0,0,0,0,0,0\r", get_seq_num());
-    sprintf(tmp, "AT*REF=%d,290717696\r");
-    strcat(cmd, tmp);
-
-    while (!stop) {
+    while (!cmd_stop) {
+        sprintf(cmd, "AT*PCMD_MAG=%d,0,0,0,0,0,0,0\r", get_seq_num());
+        sprintf(tmp, "AT*REF=%d,290717696\r");
+        strcat(cmd, tmp);
         send_AT_cmd(cmd);
-        usleep(CMD_INTERVAL);       
+        usleep(CMD_INTERVAL * 5);       
     }
 }
 
@@ -56,9 +59,9 @@ static void cmd_socket_close()
 void cmd_thread_init()
 {
     int err;
-    err = pthread_create(&cmd_pid, NULL, worker, NULL);
+    err = pthread_create(&cmd_pid, NULL, cmd_worker, NULL);
     if (err != 0)
-        printf("create pthread error: %s\n", strerror(err));
+        printf("create cmd thread error: %s\n", strerror(err));
 }
 
 char *get_ardrone_ip()
@@ -95,7 +98,6 @@ void ardrone_init()
     strcat(cmd, tmp);
        
     send_AT_cmd(cmd);
-    usleep(CMD_INTERVAL);
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
@@ -104,7 +106,6 @@ void ardrone_init()
     sprintf(tmp, "AT*REF=%d,290717696\r", get_seq_num());
     strcat(cmd, tmp);
     send_AT_cmd(cmd);
-    usleep(CMD_INTERVAL);
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
@@ -112,7 +113,6 @@ void ardrone_init()
     sprintf(tmp, "AT*REF=%d,290717696\r", get_seq_num());
     strcat(cmd, tmp);
     send_AT_cmd(cmd);
-    usleep(CMD_INTERVAL);
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
@@ -120,7 +120,6 @@ void ardrone_init()
     sprintf(tmp, "AT*REF=%d,290717696\r", get_seq_num());
     strcat(cmd, tmp);
     send_AT_cmd(cmd);
-    usleep(CMD_INTERVAL);
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
@@ -133,7 +132,6 @@ void ardrone_init()
     sprintf(tmp, "AT*REF=%d,290717696\r", get_seq_num());
     strcat(cmd, tmp);
     send_AT_cmd(cmd);
-    usleep(CMD_INTERVAL);
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
@@ -142,7 +140,6 @@ void ardrone_init()
     sprintf(tmp, "AT*CONFIG_IDS=%d,\"custom:session_id\",\"%s\"\r", get_seq_num(), ARDRONE_SESSION_ID);
     strcat(cmd, tmp);
     send_AT_cmd(cmd);
-    usleep(CMD_INTERVAL);
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
@@ -151,7 +148,6 @@ void ardrone_init()
     sprintf(tmp, "AT*CONFIG_IDS=%d,\"custom:profile_id\",\"%s\"\r", get_seq_num(), ARDRONE_PROFILE_ID);
     strcat(cmd, tmp);
     send_AT_cmd(cmd);
-    usleep(CMD_INTERVAL);
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
@@ -161,7 +157,6 @@ void ardrone_init()
     sprintf(tmp, "AT*CONFIG_IDS=%d,\"custom:application_id\",\"%s\"\r", get_seq_num(), ARDRONE_APPLICATION_ID);
     strcat(cmd, tmp);
     send_AT_cmd(cmd);
-    usleep(CMD_INTERVAL);
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
@@ -180,11 +175,12 @@ void send_AT_cmd(const char *cmd)
 {
     int res;
 
-    res = sendto(cmd_socket, cmd, strlen(cmd), 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr));
+    res = sendto(cmd_socket, cmd, strlen(cmd), 0, (struct sockaddr *)&cmd_dst_addr, sizeof(cmd_dst_addr));
 
     if (res == -1) {
         printf("Sending AT command [%s] FAILD.\n", cmd);
     }
+    usleep(CMD_INTERVAL);
 }
 
 int get_seq_num()
@@ -197,5 +193,5 @@ int get_seq_num()
 
 void cmd_thread_exit()
 {
-    stop = 1;
+   cmd_stop = 1;
 }

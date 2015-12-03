@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/types.h>
+#include <errno.h>
 
 /* Receive nvdata on UPD port 5554 */
 #define NAV_DATA_PORT   (5554)
