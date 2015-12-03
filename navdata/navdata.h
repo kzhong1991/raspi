@@ -1,3 +1,9 @@
+/*****************************************************************************
+ * @file    navData.h
+ * @author  kzhong1991<kzhong1991@gmail.com>
+ * @date    2015-12-03
+ * @brief   This thread is used to receive navigation data send by ardrone
+ *****************************************************************************/
 #ifndef NVADATA_H
 #define NVADATA_H
 

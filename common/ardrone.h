@@ -1,3 +1,9 @@
+/**********************************************************
+ * @file    ardrone.h
+ * @author  kzhong1991<kzhong1991@gmail.com>
+ * @date    2015-12-03
+ * @brief   ardrone control API
+ *********************************************************/
 #ifndef ARDRONE_H
 #define ARDRONE_H
 
