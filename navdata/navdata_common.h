@@ -26,9 +26,6 @@
 #define DEFAULT_NB_TRACKERS_WIDTH    (NB_CORNER_TRACKERS_WIDTH+1)// + NB_BLOCK_TRACKERS_WIDTH)
 #define DEFAULT_NB_TRACKERS_HEIGHT   (NB_CORNER_TRACKERS_HEIGHT+1)// + NB_BLOCK_TRACKERS_HEIGHT)
 
-#define NAVDATA_OPTION_MASK(option) ( 1 << (option) )
-#define NAVDATA_OPTION_FULL_MASK    ((1<<NAVDATA_NUM_TAGS)-1)
-
 
 typedef int32_t    bool_t;
 
@@ -115,6 +112,9 @@ typedef struct _velocities_t {
 typedef enum _navdata_tag_t {
     #include "navdata_keys.h"
 } navdata_tag_t;
+
+#define NAVDATA_OPTION_MASK(option) ( 1 << (option) )
+#define NAVDATA_OPTION_FULL_MASK    ((1<<NAVDATA_NUM_TAGS)-1)
 
 
 /*===============================================Navigation Data Stream==================================================

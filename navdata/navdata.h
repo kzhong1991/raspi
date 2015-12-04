@@ -15,6 +15,13 @@
 #include "navdata_common.h"
 #include "navdata_keys.h"
 
+#define MAX_NAVDATA_SIZE (4096)
+
+#define ardrone_navdata_unpack(navdata_ptr, option) (navdata_option_t*) navdata_unpack_option((uint8_t*) navdata_ptr, \
+                                                                                                navdata_ptr->size,    \
+                                                                                                (uint8_t*) &option,   \
+                                                                                                sizeof (option))
+
 
 void navdata_init();
 void nav_thread_exit();
