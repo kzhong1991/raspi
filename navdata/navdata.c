@@ -3,7 +3,7 @@
 
 int nav_socket;
 struct sockaddr_in nav_dst_addr, nav_src_addr;
-pthread_t nav_pid = NULL;
+pthread_t nav_pid = NULL, nav_init_pid = NULL;;
 int nav_stop = 0;
 navdata_t *navdata;
 navdata_unpacked_t navdata_unpacked;
@@ -105,19 +105,7 @@ static int ardrone_navdata_unpack_all(navdata_unpacked_t *navdata_unpacked, navd
       else
       {
           if( navdata_option_ptr->tag <= NAVDATA_NUM_TAGS)
-          {
-               //#ifdef DEBUG_NAVDATA_C
-               //if (navdata_unpacked->ardrone_state & ARDRONE_COMMAND_MASK)
-               //{
-               //    ack = "[ACK]";
-               //}
-               //this->print(ack + "Received navdatas tags :" + itos(navdata_option_ptr->tag));
-               //ack = "";
-               //#endif
-
                navdata_unpacked->last_navdata_refresh |= NAVDATA_OPTION_MASK(navdata_option_ptr->tag);
-          }
-
 
          switch( navdata_option_ptr->tag )
          {
@@ -227,7 +215,8 @@ void config_navdata(int value)
 }
 
 
-void navdata_init()
+
+void *navdata_init_worker(void *arg)
 {
     char data[5] = {0x01, 0x01, 0x01, 0x01, 0x00};
     char msg[MAX_NAVDATA_SIZE], cmd[1024], tmp[64];
@@ -285,19 +274,6 @@ try_again:
             else {
                 ardrone_init();
                 goto try_again;
-                /*
-                if (try <= 5) {
-                    printf(">>>>>>navdata init failed, try = %d\n", try);
-                    try++;
-                    ardrone_init(); 
-                    goto try_again;
-                }
-                else {
-                    printf("Initing navdata failed after try %d times\n", try);
-                    cmd_thread_exit();
-                    return;           
-                }
-                */
             }
         }
     }
@@ -305,6 +281,16 @@ try_again:
     printf("\033[1;33m""Init navdata OK.\n""\033[0m");
     if (!nav_pid)
         nav_thread_init();
+    return 0;
+}
+
+void navdata_init()
+{
+    int err;
+    err = pthread_create(&nav_init_pid, NULL, navdata_init_worker, NULL);
+    if (err != 0)
+        printf("create nav thread error: %s\n", strerror(err));
+    return;
 }
 
 void nav_thread_exit()
