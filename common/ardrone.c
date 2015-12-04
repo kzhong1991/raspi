@@ -12,9 +12,6 @@ static int cmd_socket_init()
     int res;
     char *ardrone_ip;
 
-    if (cmd_socket != 0)
-        return 0;
-
     ardrone_ip = get_ardrone_ip();
 
     bzero(&cmd_src_addr, sizeof(cmd_src_addr));
@@ -77,9 +74,11 @@ void ardrone_init()
     memset(cmd, '\0', sizeof(cmd));
     memset(tmp, '\0', sizeof(tmp));
 
-    printf("Connecting ardrone...\n");
-    pthread_mutex_init(&mutex, NULL);
-    cmd_socket_init();   
+    if (cmd_socket == 0) {
+        printf("\033[1;33m""Connecting ardrone...\n""\033[0m");
+        pthread_mutex_init(&mutex, NULL);
+        cmd_socket_init();   
+    }
 
     sprintf(cmd, "AT*PMODE=%d,2\r", get_seq_num());
     send_AT_cmd(cmd);
