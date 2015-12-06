@@ -2,17 +2,16 @@
 
 int board_socket;
 struct sockaddr_in board_addr;
-pthread_t board_pid = NULL ;
+pthread_t board_init_pid =NULL, board_pid = NULL ;
 int board_stop = 0;
 board_data_t date_t;
 
 static int board_socket_init()
 {
-    printf("@@@@@@@@@@init boardsocket@@@@@@@@@@@\n");
 
 	if ((board_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
      {
-             fprintf(stderr, "socket error!\n");
+             fprintf(stderr, "board socket error!\n");
              return 0;
         }
 
@@ -24,10 +23,10 @@ static int board_socket_init()
 
     if (connect(board_socket, (struct sockaddr *)&board_addr, sizeof(struct sockaddr)) == -1)
     {
-        fprintf(stderr,"connect error!\n");
+        fprintf(stderr,"board connect error!\n");
         return 0;
     } 
-    fprintf(stdout, "connect ok!\n");
+    fprintf(stdout, "board connect ok!\n");
 	return 1;
 }
 
@@ -47,10 +46,10 @@ static board_data_t makedata(char *buf)
 		if(i>=1)
 		{
 			printf("endpiont %2d : ",data_t.id);
-			printf("%02x ",((char *)data_t.temp));
-			printf("%02x ",((char *)data_t.humi));
-			printf("%02x ",((char *)data_t.light));
-			printf("%02x ",((char *)data_t.gas));
+			printf("%3d ",(data_t.temp));
+			printf("%3d ",(data_t.humi));
+			printf("%3d ",(data_t.light));
+			printf("%3d ",(data_t.gas));
 			printf("\n");
 		}
 	}
@@ -69,7 +68,6 @@ void *board_worker(void *arg)
 	while(1)
 	{
 		int i,numbytes=0;
-		printf("&&&&&&&&&&&test&&&&&&&&&&&&&\n");
 		while(1){
 			send(board_socket, &sendMessage, sizeof(sendMessage), 0);
 			if ((numbytes = read(board_socket , buf, MAX_DATA_SIZE)) == -1)
@@ -83,23 +81,34 @@ void *board_worker(void *arg)
 //            	for(i=0; i<numbytes; i++)
 //                	printf("%02x ",((char *)buf)[i]);
 				makedata(buf);
+				sleep(1);
 				break;				
          	}
+			
     	}
 	}
 } 
 
+void *board_init_worker(void *arg)
+{
+	int err; 
+	while(!board_socket_init())
+        printf("socket init error!\n");
+	
+	err = pthread_create(&board_pid, NULL,
+            board_worker ,NULL);
+    if(err !=0 )
+        printf("create board thread error: %s\n",strerror(err));
+
+}
 
 void board_init()
 {
 	int err;
-	printf("***************board***********\n");
-	while(!board_socket_init())
-		printf("socket init error!\n");
-	err = pthread_create(&board_pid, NULL,
-			board_worker ,NULL);
-	if(err !=0 )
-		printf("create board thread error: %s\n",strerror(err));
+	err = pthread_create(&board_init_pid, NULL,
+			board_init_worker , NULL);		
+	 if(err !=0 )
+        printf("create board init thread error: %s\n",strerror(err));
 	return;
 }
 
