@@ -68,8 +68,6 @@ typedef enum _codec_type_t {
 
 void ardrone_init();
 void send_AT_cmd(char *cmd);
-void ardrone_config(const char *name, const char *value);
-void send_PCMD_MAG(int enable, float roll, float pitch, float gaz, float yaw, float psi, float psi_accuracy);
 int get_seq_num();
 void wait_thread_loop();
 void cmd_thread_exit();

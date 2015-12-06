@@ -22,7 +22,6 @@
                                                                                                 (uint8_t*) &option,   \
                                                                                                 sizeof (option))
 
-
 void navdata_init();
 void nav_thread_exit();
 

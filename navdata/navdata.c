@@ -129,7 +129,7 @@ static int ardrone_navdata_unpack_all(navdata_unpacked_t *navdata_unpacked, navd
 
           default:
               //printf("Tag %d is an unknown navdata option tag", navdata_option_ptr->tag);
-              navdata_option_ptr = (navdata_option_t *)(((uint64_t)navdata_option_ptr) + navdata_option_ptr->size);
+              navdata_option_ptr = (navdata_option_t *)(((uint)navdata_option_ptr) + navdata_option_ptr->size);
               break;
           }
        }
@@ -289,7 +289,7 @@ void navdata_init()
     int err;
     err = pthread_create(&nav_init_pid, NULL, navdata_init_worker, NULL);
     if (err != 0)
-        printf("create nav thread error: %s\n", strerror(err));
+        printf(">>>>>>create navdata init thread error: %s\n", strerror(err));
     return;
 }
 
